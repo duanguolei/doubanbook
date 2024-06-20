@@ -1,0 +1,304 @@
+{% extends './manage_base.html' %}
+{% load static %}
+{% block css %}
+       <style>
+
+    .bookimg{
+        width: 60px;
+        height: 100px ;
+    }
+    .bookimg:hover{
+        transition: s;
+    }
+
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="panel panel-default">
+   <div class="panel-heading">图书管理</div>
+  <div class="panel-body">
+   <a class="btn btn-success btn-sm" data-toggle="modal" data-target="#addModal" >新建图书</a>
+      <table id="course_table">
+
+      </table>
+
+  </div>
+</div>
+
+
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">新建图书</h4>
+      </div>
+      <div class="modal-body">
+            <form id="addform">
+                {% csrf_token %}
+            {% for filed in form %}
+                <div class="form-group">
+                <label for="{{ filed.id_for_label }}">{{ filed.label }}</label>
+                       {% if filed.help_text %}
+                        <span>{{ filed.help_text }}</span>
+                    {% endif %}
+                {{ filed }}
+                <span class="error-msg">{{ filed.errors.0 }}</span>
+                </div>
+            {% endfor %}
+            </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" id="addbtn">提交</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">上传封面</h4>
+      </div>
+      <div class="modal-body">
+     <form>
+                                <div class="form-group">
+                                    <div class="input-group custom-input-group">
+                                        <input type="file" class="form-control" placeholder="上传封面" id="uploadimg">
+                                    </div>
+                                </div>
+                                <div class="btn btn-primary" id="imagebtn"> <i class="fa fa-upload" aria-hidden="true"></i>上传封面 </div>
+                            </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block js %}
+    <script>
+                $(document).ready(function() {
+    bindClickSubmit();
+    uploadavatar();
+
+});
+                function uploadavatar() {
+    $("#imagebtn").click(function() {
+        var error = $('#error');
+        error.empty();
+
+        var formData = new FormData();
+        var files = $('#uploadimg')[0].files;
+        if (files.length > 0) {
+            formData.append('image', files[0]);
+            formData.append('type', 'bookavator');
+            formData.append(
+                'bookid',$(this).data().id
+            );
+
+            $.ajax({
+                url: "{% url 'book:upload' %}",
+                type: "POST",
+                data: formData,
+                dataType: "JSON",
+                processData: false,
+                contentType: false,
+                success: function(res) {
+                    console.log(res);
+                    if (res['status']) {
+                        location.reaload();
+                    } else {
+                        error.text('上传错误');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                    error.text('上传错误');
+                }
+            });
+        } else {
+            error.text('请选择要上传的图片');
+        }
+    });
+}
+
+function bindClickSubmit() {
+    $("#addbtn").click(function() {
+        $('.error-msg').empty();
+
+        $.ajax({
+            url: "{% url 'book:manage_book' %}",
+            type: "POST",
+            data: $('#addform').serialize(),
+            dataType: "JSON",
+            success: function(res) {
+                if (res['status']) {
+                    location.reload()
+                } else {
+                    $.each(res.error, function(key, value) {
+                        $("#id_" + key).next().text(value[0]);
+                    });
+                }
+            },
+
+        });
+    });
+}
+
+
+    </script>
+    <script>
+
+            window.operateEvents = {
+            // 当点击 class=delete 时触发
+            'click .delete': function (e,value,row,index) {
+                var id=row.id;
+                       $.ajax({
+            url: "{% url 'book:deel_book' %}",
+            type: "GET",
+            data: {'type':'delete',id:id},
+            dataType: "JSON",
+            success: function(res) {
+                if (res['status']) {
+                    location.reload();
+                } else {
+                  alert(res.data)
+                }
+            },
+
+        });
+            }
+                ,
+                 'click #updateModal': function (e,value,row,index) {
+                var id=row.id;
+                 $.ajax({
+            url: "{% url 'book:deel_book' %}",
+            type: "GET",
+            data: {'title':'图书信息更改',id:id,type:'update'},
+            dataType: "JSON",
+            success: function(res) {
+                if (res['status']) {
+                    location.href={% url "book:update_form"  %};
+                } else {
+                  alert(res.data)
+                }
+            },
+
+        });
+            },
+            'click #upload':function (e,value,row,index) {
+                var bookid=row.id;
+                $('#imagebtn').attr('data-id',bookid);
+
+            }
+        };
+
+        $('#course_table').bootstrapTable({
+            url: '{% url "book:book_data" %}',         //请求后台的 URL（*）
+            method: 'get',                      //请求方式（*）
+            // data: data,                      //当不使用上面的后台请求时，使用data来接收数据
+            toolbar: '#toolbar',                //工具按钮用哪个容器
+            sidePagination:'server',//server:服务器端分页|client：前端分页
+          queryParams: function (params) {
+        return {
+            limit: params.limit, // 每页显示数量
+            offset: params.offset, // SQL语句起始索引
+            page: (params.offset / params.limit) + 1, // 当前页码
+            Name: $('#search_name').val(), // 搜索参数
+        };
+    },
+    responseHandler: function (res) {
+        // 处理响应数据格式
+        return {
+            total: res.total, // 总记录数
+            rows: res.data // 数据行
+        };
+    },
+            striped: true,                      //是否显示行间隔色
+            cache: true,                       //是否使用缓存，默认为 true，所以一般情况下需要设置一下这个属性（*）
+            pagination: true,                   //是否显示分页（*）
+            sortable: false,                    //是否启用排序
+            sortOrder: "asc",                   //排序方式
+
+            pageNumber:1,                       //初始化加载第一页，默认第一页
+            pageSize: 20,                        //每页的记录行数（*）
+            pageList: [20],        //可供选择的每页的行数（*）
+            search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以个人感觉意义不大
+            strictSearch: true,                 //启用严格搜索。禁用比较检查。
+            showColumns: true,                  //是否显示所有的列
+            showRefresh: true,                  //是否显示刷新按钮
+            minimumCountColumns: 2,             //最少允许的列数
+            clickToSelect: true,                //是否启用点击选中行
+            height: 700,                        //行高，如果没有设置 height 属性，表格自动根据记录条数觉得表格高度
+            uniqueId: "ID",                     //每一行的唯一标识，一般为主键列
+            showToggle:true,                    //是否显示详细视图和列表视图的切换按钮
+            cardView: false,                    //是否显示详细视图
+            detailView: false,                  //是否显示父子表
+            showExport: true,                   //是否显示导出
+            exportDataType: "basic",            //basic', 'all', 'selected'.
+            columns: [{
+                checkbox: true     //复选框标题，就是我们看到可以通过复选框选择整行。
+            }, {
+                field: 'id', title: 'ID'       //我们取json中id的值，并将表头title设置为ID
+            },
+               {
+    field: 'booklogo',
+    title: "封面",
+    align: 'center',
+    events: operateEvents,
+    formatter: function(value, row, index) {
+        var image = '<img src="../media/' + row.booklogo + '" alt="Book Cover" class="bookimg">';
+        return image;
+    }},
+
+
+                {
+                field: 'name', title: '图书名称'         //我们取 json 中 username 的值，并将表头 title 设置为用户名
+            },{
+                field: 'autor', title: '作者'                //我们取 json 中 sex 的值，并将表头 title 设置为性别
+            },
+                {
+                  field:'isbn'  ,title:'ISBN'
+                },
+                {
+                    field:'tagname',title:'标签'
+                }
+                ,{
+                field: 'rating', title: '评分'               //我们取 json 中 sign 的值，并将表头 title 设置为签名
+            },
+                { field: "review_count", title: "评论数"           //我们取 json 中 sign 的值，并将表头 title 设置为签名
+            },
+                {
+                field: 'price', title: '价格'               //我们取 json 中 city 的值，并将表头 title 设置为城市
+            },
+                {
+                field: 'year', title: '出版时间'               //我们取 json 中 sign 的值，并将表头 title 设置为签名
+            },
+                {
+                //ormatter:function(value,row,index) 对后台传入数据 进行操作 对数据重新赋值 返回 return 到前台
+                // events 触发事件
+                field: 'Button',title:"操作",align: 'center',events:operateEvents,formatter:function(value,row,index){
+                    var del = '<button type="button"  class="btn btn-danger delete" style="margin: 5px">删除</button>'
+                    var update = '<button type="button" class="btn btn-primary upgrade" id="updateModal" style="margin: 5px">更新</button>'
+                    var search = '<div type="button" class="btn btn-info search" style="margin: 5px"><a href="/book_detail/' + row.id+ '" >详情'+ '</a></div>'
+                        var upload='<button type="button" class="btn btn-default" id="upload" style="margin: 5px" data-toggle="modal" data-target="#uploadModal">上传封面</button>'
+                  return [del,update,search,upload].join('')
+                }
+            }
+            ],
+
+        });
+
+    </script>
+{% endblock %}
+
+
+

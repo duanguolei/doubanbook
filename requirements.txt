@@ -1,0 +1,8 @@
+Django==5.0.3
+jieba==0.42.1
+lxml==4.9.2
+pandas==1.5.3
+Pillow==10.3.0
+PyMySQL==1.1.0
+pyspark==3.5.1
+Requests==2.32.3

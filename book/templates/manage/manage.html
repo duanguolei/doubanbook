@@ -1,0 +1,353 @@
+{% extends './manage_base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="row">
+<div class="container-fluid" style="margin-top: 20px">
+
+    <div class="col-md-6">
+              <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                        数量情况
+                    </div>
+                    <div class="panel-body">
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card text-center">
+                <div class="card-header bg-primary text-white">
+                    图书数量
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title">{{ book_count }}</h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card text-center">
+                <div class="card-header bg-success text-white">
+                    用户数量
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title">{{ user_count }}</h1>
+                </div>
+
+        </div>
+    </div>
+</div>
+                    </div>
+                </div>
+           <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                        图书类别数量top10
+                    </div>
+                    <div class="panel-body">
+                       <div id="book_stag" style="min-width:400px;height:400px"></div>
+
+                    </div>
+                </div>
+            <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                        中外作者占比
+                    </div>
+                    <div class="panel-body">
+                       <div id="autor_chart" style="min-width:400px;height:400px"></div>
+
+                    </div>
+                </div>
+    </div>
+        <div class="col-md-6">
+
+            <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                      图书评分分布
+                    </div>
+                    <div class="panel-body">
+                                 <div id="book_pie" style="min-width:400px;height:400px"></div>
+                    </div>
+                </div>
+
+ <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                      图书热度
+                    </div>
+                    <div class="panel-body">
+                                 <div id="hote_book" style="min-width:200px;height:400px"></div>
+                    </div>
+                </div>
+                    </div>
+                </div>
+
+  <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                        评论词云图
+                    </div>
+                    <div class="panel-body">
+                       <div id="word_chart" style="width:100%;height:500px"></div>
+
+                    </div>
+                </div>
+
+</div>
+
+
+{% endblock %}
+
+{% block js %}
+
+<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.0.0/dist/echarts-wordcloud.min.js"></script>
+
+<script>
+    $(function(){
+        init_chart()
+    })
+
+    function init_chart(){
+        var pie_config={
+		chart: {
+				plotBackgroundColor: null,
+				plotBorderWidth: null,
+				plotShadow: false,
+				type: 'pie'
+		},
+		title: {
+				text: ''
+		},    credits:{
+                    enabled:false
+                    },
+
+		tooltip: {
+				pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+		},
+		plotOptions: {
+				pie: {
+						allowPointSelect: true,
+						cursor: 'pointer',
+						dataLabels: {
+								enabled: false
+						},
+						showInLegend: true
+				}
+		},
+		series: [{
+				name: '评分占比',
+				colorByPoint: true,
+				data:[]
+		}]
+};
+        var line_config={
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: ''
+    },
+    credits:{
+                    enabled:false
+                    },
+    xAxis: {
+        categories: [
+        ],
+        crosshair: true
+    },
+    yAxis: {
+        min: 0,
+        title: {
+            text: '图书数量'
+        }
+    },
+    tooltip: {
+
+        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+        '<td style="padding:0"><b>{point.y:.1f} 本</b></td></tr>',
+        footerFormat: '</table>',
+        shared: true,
+        useHTML: true
+    },
+    plotOptions: {
+        column: {
+            borderWidth: 0
+        }
+    },
+    series: []
+};
+        var hote_line_config={
+    chart: {
+        type: 'bar'
+    },
+    title: {
+        text: '图书热度',
+        align: 'left'
+    },
+
+    xAxis: {
+
+        title: {
+            text: null
+        },
+        gridLineWidth: 1,
+        lineWidth: 0
+    },
+    yAxis: {
+        min: 0,
+        title: {
+            text: '热度',
+            align: 'high'
+        },
+        labels: {
+            overflow: 'justify'
+        },
+        gridLineWidth: 0
+    },
+
+    plotOptions: {
+        bar: {
+            {#borderRadius: '50%',#}
+            dataLabels: {
+                enabled: true
+            },
+            groupPadding: 0.1
+        }
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'top',
+        x: -40,
+        y: 80,
+        floating: true,
+        borderWidth: 1,
+        backgroundColor:
+            Highcharts.defaultOptions.legend.backgroundColor || '#FFFFFF',
+        shadow: true
+    },
+    credits: {
+        enabled: false
+    },
+    series: [{
+        name: '热度',
+
+    }
+    ]
+};
+       var autor_config = {
+    chart: {
+        type: 'pie'
+    },
+    credits: {
+        enabled: false
+    },
+    title: {
+        text: ''
+    },
+
+        plotOptions: {
+            series: {
+                borderWidth: 0,
+                colorByPoint: true,
+                type: 'pie',
+                size: '100%',
+                innerSize: '80%',
+                dataLabels: {
+                    enabled: true,
+                    crop: false,
+                    distance: '-10%',
+                    style: {
+                        fontWeight: 'bold',
+                        fontSize: '16px'
+                    },
+                    connectorWidth: 0
+                }
+            }
+        },
+    series: [{
+        name: '数量',
+        data: [
+            ['类别1', 30],
+            ['类别2', 20],
+            ['类别3', 50]
+        ],
+        showInLegend: true // 在图例中显示
+    }]
+};
+var wordChart = echarts.init(document.getElementById('word_chart'));
+
+
+var word_option = {
+                series: [{
+                    type: 'wordCloud',
+                   //maskImage: maskImage,
+                    sizeRange: [15, 80],
+                    rotationRange: [0, 0],
+                    rotationStep: 45,
+                    {#gridSize: 8,#}
+                    shape: 'pentagon',
+                    width: '100%',
+                    height: '100%',
+                     textStyle: {
+                        normal: {
+                            color: function () {
+                                return 'rgb(' + [
+                                    Math.round(Math.random() * 160),
+                                    Math.round(Math.random() * 160),
+                                    Math.round(Math.random() * 160)
+                                ].join(',') + ')';
+                            },
+                            fontFamily: 'sans-serif',
+                            fontWeight: 'normal'
+                        },
+                        emphasis: {
+                            shadowBlur: 10,
+                            shadowColor: '#333'
+                        }
+                    },
+                    data: []
+                }]
+            };
+
+        $.ajax({
+            url:'{% url "book:manage" %}',
+            type:'POST',
+            success:function (res) {
+                if(res.status){
+
+                    pie_config.series[0].data=res.pie_data;
+                    Highcharts.chart('book_pie',pie_config);
+                    line_config.series=res.tag_data;
+                    line_config.xAxis.categories=res.categories;
+                      Highcharts.chart('book_stag',line_config);
+                      hote_line_config.xAxis.categories=res.hote_data.name;
+                      hote_line_config.series[0].data=res.hote_data.data;
+
+                      Highcharts.chart('hote_book',hote_line_config);
+
+                      autor_config.series[0].data=res.autor_data;
+                      Highcharts.chart('autor_chart',autor_config   );
+
+                      word_option.series[0].data=res.word_data;
+                      wordChart.setOption(word_option);
+
+                }
+
+            }
+
+        })
+
+
+
+    }
+
+    </script>
+{% endblock js %}

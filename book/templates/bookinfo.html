@@ -1,0 +1,215 @@
+{% extends './lyout/base.html' %}
+{% load static %}
+{% load user %}
+{% block css %}
+    <style>
+    .bookimg{
+        max-width: 135px;
+        max-height: 200px;
+    }
+    .pl{
+        font-size: 13px;
+
+        color: rgba(186,185,185,1   );
+    }
+
+    .namelogo{
+        width: 40px;
+        height: 40px
+    }
+
+    </style>
+{% endblock %}
+{% block content %}
+
+        <div class="panel panel-default" style="margin-top: 0px">
+   <div class="panel-heading">图书简介</div>
+  <div class="panel-body" style="background-color: #f6f6f1">
+<div class="container-fluid">
+    <div class="row panel">
+                
+            <div class="col-sm-2">
+                <img src="{{ MEDIA_URL }}{{ book.booklogo }}" class="bookimg">
+            </div>
+            <div class="col-sm-2"  style="margin-left: -100px;">
+                <div id="info">
+
+    <span>
+           <span class="pl">书名 </span>:
+          {{ book.name }}
+    </span><br>
+      <span class="pl"> 作者</span>:
+                    {{ book.autor }}
+    </span><br>
+
+    <span class="pl">出版社:</span>
+            {{ book.publish }}
+    <br>
+
+    <span class="pl">出版年:</span> {{ book.year }}<br>
+
+    <span class="pl">定价:</span> {{ book.price }}<br>
+
+      <span class="pl">ISBN:</span> {{ book.isbn }}<br>
+   <hr/>
+</div>
+            {% if book.rating %}
+           评分:<span style="font-size: 20px">{{ book.rating }}</span>分
+        {% for star in vatings_list %}
+            {% if star == 1 %}
+               <i class="fa fa-star" aria-hidden="true" style="color: #f0ad4e;"></i>
+                {% elif  star == 0.5 %}
+               <i class="fa fa-star" aria-hidden="true" style="color:#f0ad4e;"></i>
+
+                {% else %}
+              <i class="fa fa-star" aria-hidden="true" style="color:#dcdcdc;opacity: 1;border: black"></i>
+            {% endif %}
+        {% endfor %}
+
+    {% endif %}
+
+            </div>
+            <div class="col-sm-8"></div>
+    </div>
+    <div class="row panel">
+        <div class="panel panel-heading">简介</div>
+        <div class="panel panel-body">
+            {{ book.desc | safe}}
+        </div>
+
+    </div>
+    <div class="row panel">
+   <div class="panel-heading">评论</div>
+        <div class="panel-body">
+
+
+                    <table class="table" style="width:60%;margin-left: 0">
+                        <tbody>
+                        {% for review in reviews %}
+                      <tr>
+                          <td>
+            <div class="row">
+            <div class="col-sm-1"><img src="{{ review.namelogo }}" class="namelogo"></div>
+                        <div class="col-sm-8">
+                            <span style="font-size: 15px;color: rgba(42,104,255,0.8)">{{ review.name }}</span>
+                            <span>
+                          {% for star in review_star_list|get_item:review.id %}
+            {% if star == 1 %}
+               <i class="fa fa-star" aria-hidden="true" style="color: #f0ad4e;"></i>
+                {% else %}
+                  <i class="fa fa-star" aria-hidden="true" style="color:#dcdcdc;opacity: 1;border: black"></i>
+
+            {% endif %}
+        {% endfor %}
+
+                            </span>
+                            <span>{{ review.create_date }}</span>
+                            <div><p>
+                                {{ review.content }}
+                            </p></div>
+                        </div>
+            </div>
+
+                        </td>
+                    </tr>
+                        {% endfor %}
+                        </tbody>
+
+                    </table>
+
+                <nav aria-label="...">
+                <ul class="pagination" style="margin-top: 0;">
+                    {{ page_html|safe }}
+                </ul>
+            </nav>
+
+                <hr/>
+            {% if request.manage.user %}
+               <div class="comment-text" id="commentText">
+
+                        <div class="form-group">
+                            <textarea id="content" rows="6" class="form-control"
+                                      placeholder="请输入评论的内容"></textarea>
+                            <span class="error-msg" id="error-msg"></span>
+                        </div>
+                    <div class="form-group" id="vating_star">
+                        <i class="fa fa-star" aria-hidden="true" style="color:#dcdcdc;opacity: 1;border: black;font-size: 30px"></i>
+                        <i class="fa fa-star" aria-hidden="true" style="color:#dcdcdc;opacity: 1;border: black;font-size: 30px"></i>
+                        <i class="fa fa-star" aria-hidden="true" style="color:#dcdcdc;opacity: 1;border: black;font-size: 30px"></i>
+                        <i class="fa fa-star" aria-hidden="true" style="color:#dcdcdc;opacity: 1;border: black;font-size: 30px"></i>
+                        <i class="fa fa-star" aria-hidden="true" style="color:#dcdcdc;opacity: 1;border: black;font-size: 30px"></i>
+               </div>
+
+                    </div>
+
+                        <div class="btn btn-primary" type="button" id="btnSubmit" value="提 交">
+
+            提 交
+                    </div>
+                {% else %}
+                <div>
+                <a class="btn btn-default btn-large" href="{% url 'book:login' %}">
+                    -------------------------------------------------------------------点击登录评论------------------------------------------------------------------
+                </a>
+                </div>
+        {% endif %}
+
+        </div>
+
+
+    </div>
+</div>
+  </div>
+        </div>
+
+{% endblock %}
+
+{% block js %}
+    <script>
+    var count=0
+    $(function () {
+ binsubmitreview()
+
+            $("#vating_star i").click(function(){
+
+        var  computedColor =$(this).css("color");
+
+            var rgbArray = computedColor.match(/\d+/g); // 从 RGB 字符串中提取数字部分
+            var hexColor = "#" + rgbArray.map(x => parseInt(x).toString(16).padStart(2, '0')).join(''); // 转换为十六进制
+
+        if(hexColor!='#f0ad4e'){
+                  $(this).css('color', '#f0ad4e');
+                  count++
+        }
+        else {
+                count--
+                  $(this).css('color', '#dcdcdc');
+
+        }
+    });
+    })
+    function binsubmitreview() {
+        $('#btnSubmit').click(
+            function () {
+            data={
+                star:count,
+                content:$('#content').val()
+            }
+                $.ajax({
+                    url:'{% url "book:book_review" bookid=book.id %}',
+                    type:'GET',
+                    data:data,
+                    success:function (res) {
+                        if(res.status){
+                            location.reload()
+                        }
+                    }
+
+
+                })
+
+            })
+    }
+
+    </script>
+{% endblock %}

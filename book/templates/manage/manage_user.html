@@ -1,0 +1,237 @@
+{% extends './manage_base.html' %}
+{% load static %}
+{% block css %}
+       <style>
+
+    .bookimg{
+        width: 60px;
+        height: 60px ;
+        border-radius: 50%;
+    }
+
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="panel panel-default">
+   <div class="panel-heading">用户管理</div>
+  <div class="panel-body">
+      <table id="course_table">
+
+      </table>
+
+  </div>
+</div>
+
+
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">上传头像</h4>
+      </div>
+      <div class="modal-body">
+     <form>
+                                <div class="form-group">
+                                    <div class="input-group custom-input-group">
+                                        <input type="file" class="form-control" placeholder="上传头像" id="uploadimg">
+                                    </div>
+                                </div>
+                               <div class="btn btn-primary" id="imagebtn"> <i class="fa fa-upload" aria-hidden="true"></i>上传头像 </div>
+                            </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block js %}
+    <script>
+                $(document).ready(function() {
+
+    uploadavatar();
+
+});
+                function uploadavatar() {
+    $("#imagebtn").click(function() {
+        var error = $('#error');
+        error.empty();
+
+        var formData = new FormData();
+        var files = $('#uploadimg')[0].files;
+        if (files.length > 0) {
+            formData.append('image', files[0]);
+            formData.append('type', 'avator');
+            formData.append(
+                'userid',$(this).data().id
+            );
+
+            $.ajax({
+                url: "{% url 'book:upload' %}",
+                type: "POST",
+                data: formData,
+                dataType: "JSON",
+                processData: false,
+                contentType: false,
+                success: function(res) {
+                    console.log(res);
+                    if (res['status']) {
+                        location.reload();
+                    } else {
+                        error.text('上传错误');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                    error.text('上传错误');
+                }
+            });
+        } else {
+            error.text('请选择要上传的图片');
+        }
+    });
+}
+
+
+
+    </script>
+    <script>
+
+            window.operateEvents = {
+            // 当点击 class=delete 时触发
+            'click .delete': function (e,value,row,index) {
+                var id=row.id;
+                       $.ajax({
+            url: "{% url 'book:deel_user' %}",
+            type: "GET",
+            data: {'type':'delete',id:id},
+            dataType: "JSON",
+            success: function(res) {
+                if (res['status']) {
+                    location.reload();
+                } else {
+                  alert(res.data)
+                }
+            },
+
+        });
+            },
+                'click .search':function (e,value,row,index) {
+                     var id=row.id;
+
+                }
+                ,
+                 'click #updateModal': function (e,value,row,index) {
+                var id=row.id;
+                 $.ajax({
+            url: "{% url 'book:deel_user' %}",
+            type: "GET",
+            data: {'title':'用户信息更改',id:id,type:'update'},
+            dataType: "JSON",
+            success: function(res) {
+                if (res['status']) {
+                    location.href={% url "book:update_form"  %};
+                } else {
+                  alert(res.data)
+                }
+            },
+
+        });
+            },
+            'click #upload':function (e,value,row,index) {
+                var bookid=row.id;
+                $('#imagebtn').attr('data-id',bookid);
+
+            }
+        };
+
+        $('#course_table').bootstrapTable({
+            url: '{% url "book:user_data" %}',         //请求后台的 URL（*）
+            method: 'get',                      //请求方式（*）
+            // data: data,                      //当不使用上面的后台请求时，使用data来接收数据
+            toolbar: '#toolbar',                //工具按钮用哪个容器
+            sidePagination:'client',//client:服务器端分页|client：前端分页
+
+    responseHandler: function (res) {
+        // 处理响应数据格式
+        return {
+            rows: res.data,
+
+        };
+    },
+            striped: true,                      //是否显示行间隔色
+            cache: true,                       //是否使用缓存，默认为 true，所以一般情况下需要设置一下这个属性（*）
+            pagination: true,                   //是否显示分页（*）
+            sortable: false,                    //是否启用排序
+            sortOrder: "asc",                   //排序方式
+
+            pageNumber:1,                       //初始化加载第一页，默认第一页
+            pageSize: 20,                        //每页的记录行数（*）
+            pageList: [20],        //可供选择的每页的行数（*）
+            search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以个人感觉意义不大
+            strictSearch: true,                 //启用严格搜索。禁用比较检查。
+            showColumns: true,                  //是否显示所有的列
+            showRefresh: true,                  //是否显示刷新按钮
+            minimumCountColumns: 2,             //最少允许的列数
+            clickToSelect: true,                //是否启用点击选中行
+            height: 700,                        //行高，如果没有设置 height 属性，表格自动根据记录条数觉得表格高度
+            uniqueId: "ID",                     //每一行的唯一标识，一般为主键列
+            showToggle:true,                    //是否显示详细视图和列表视图的切换按钮
+            cardView: false,                    //是否显示详细视图
+            detailView: false,                  //是否显示父子表
+            showExport: true,                   //是否显示导出
+            exportDataType: "basic",            //basic', 'all', 'selected'.
+            columns: [{
+                checkbox: true     //复选框标题，就是我们看到可以通过复选框选择整行。
+            }, {
+                field: 'id', title: 'ID'       //我们取json中id的值，并将表头title设置为ID
+            },
+               {
+    field: 'avator',
+    title: "头像",
+    align: 'center',
+    events: operateEvents,
+    formatter: function(value, row, index) {
+        var image = '<img src="../media/' + row.avator + '" alt="Book Cover" class="bookimg">';
+        return image;
+    }},
+
+
+                {
+                field: 'username', title: '用户姓名'         //我们取 json 中 username 的值，并将表头 title 设置为用户名
+            },{
+                field: 'mobile_phone', title: '手机号'                //我们取 json 中 sex 的值，并将表头 title 设置为性别
+            },
+
+                {
+                    field:'email',title:'邮箱'
+                }
+                ,{
+                field: 'password', title: '密码'               //我们取 json 中 sign 的值，并将表头 title 设置为签名
+            },
+
+                //ormatter:function(value,row,index) 对后台传入数据 进行操作 对数据重新赋值 返回 return 到前台
+                // events 触发事件
+                {field: 'Button',title:"操作",align: 'center',events:operateEvents,formatter:function(value,row,index){
+                    var del = '<button type="button"  class="btn btn-danger delete" style="margin: 5px">删除</button>'
+                    var update = '<button type="button" class="btn btn-primary upgrade" id="updateModal" style="margin: 5px">更新</button>'
+
+                        var upload='<button type="button" class="btn btn-default" id="upload" style="margin: 5px" data-toggle="modal" data-target="#uploadModal">更改头像</button>'
+                  return [del,update,upload].join('')
+                }
+            }
+            ],
+
+        });
+
+    </script>
+{% endblock %}
+
+
+

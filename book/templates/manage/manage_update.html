@@ -1,0 +1,91 @@
+{% extends './manage_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">{{ title }}</h4>
+      </div>
+      <div class="modal-body">
+            <form id="updateform">
+                {% csrf_token %}
+            {% for filed in form  %}
+                <div class="form-group">
+                <label for="{{ filed.id_for_label }}">{{ filed.label }}</label>
+                       {% if filed.help_text %}
+                        <span>{{ filed.help_text }}</span>
+                                    {% endif %}
+
+                {{ filed }}
+                <span class="error-msg">{{ filed.errors.0 }}</span>
+                </div>
+            {% endfor %}
+            </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" id="closemodal">关闭</button>
+        <button type="button" class="btn btn-primary" id="updatebtn">提交</button>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+
+
+
+    $(document).ready(function() {
+
+        bindClickSubmit();
+      $('#closemodal').click(function () {
+          history.back()
+
+
+    })
+
+});
+
+
+function bindClickSubmit() {
+    $("#updatebtn").click(function() {
+        $('.error-msg').empty();
+        var formData = $('#updateform').serializeArray();
+            var formObject = {};
+            for (var i = 0; i < formData.length; i++) {
+                formObject[formData[i].name] = formData[i].value;
+            }
+            var title="{{ title }}";
+            if( title == '图书信息更改') {
+                    var url='{% url "book:deel_book" %}';
+            }
+          if( title == '用户信息更改') {
+                    var url='{% url "book:deel_user" %}';
+            }
+
+        $.ajax({
+            url:url,
+            type: "POST",
+            {#拼接两个字典#}
+            data: {...{'type':'update'},...formObject},
+            dataType: "JSON",
+            success: function(res) {
+                if (res['status']) {
+                   history.back()
+                } else {
+                    $.each(res.error, function(key, value) {
+                        $("#id_" + key).next().text(value[0]);
+                    });
+                }
+            },
+
+        });
+    })
+
+}
+
+
+    </script>
+{% endblock %}

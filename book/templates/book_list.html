@@ -1,0 +1,173 @@
+{% extends 'lyout/base.html' %}
+{% load static %}
+{% load user %}
+{% block css%}
+    <style>
+     table {
+        border-collapse: separate;
+        border-spacing: 10px;
+        background-color: #f4f1e6;
+    }
+
+    .bookimg{
+        width: 156.18px;
+        height: 250px ;
+    }
+    .bookimg:hover{
+         transform: scale(1.1);
+    }
+      #book_tabel td {
+        width: 250px;
+        padding: 10px;
+        text-align: center;
+        vertical-align: top;
+    }
+       table, th, td {
+        border: 1px dashed #ccc;
+    }
+
+    .header {
+        margin-bottom: 10px;
+    }
+
+
+
+    .footer {
+        font-size: 14px;
+    }
+    </style>
+{% endblock %}
+{% block content %}
+    <nav class="navbar navbar-default" style="background-color: #f6f6f1;margin-top: -20px">
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+
+      <img class="ant-avatar" src="{% static "book/image/logo.png" %}" style="width: 30px;height: 30px;margin-top: 10px"></img>
+    </div>
+
+  <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+
+      <ul class="nav navbar-nav">
+          {% load_mune_list request %}
+      </ul>
+      <form class="navbar-form navbar-left">
+        <div class="form-group">
+                   <input type="text" id='searchinput'  name="search_text" class="form-control" placeholder="书名、作者、ISBN、出版社、读者" autocomplete="off">
+        </div>
+        <div  class="btn btn-default" id="searchbutton"> <i class="fa fa-search" aria-hidden="true"></i> </div>
+      </form>
+
+    </div>
+  </div>
+</nav>
+
+
+    <div class="panel panel-default" style="margin-top: 0px">
+   <div class="panel-heading">{{ title }}</div>
+  <div class="panel-body">
+<table class="table" id="book_tabel">
+
+     <tbody id="book_body">
+     {% for item in books_item %}
+        <tr>
+        {% for book in item %}
+          <td>
+              <div class="header">
+               <a href="{% url 'book:book_detail' bookid=book.id %}"> <img src="{{ MEDIA_URL }}{{ book.booklogo }}" alt="Book Cover" class="bookimg">
+               </a>
+              </div>
+              <div class="footer">
+                <a href="{% url 'book:book_detail' bookid=book.id %}">{{ book.name }}</a>
+                  <p>{{ book.autor }} &nbsp;&nbsp;{{ book.year }}</p>
+                <p>
+                    {% if book.rating %}
+                    评分:{{ book.rating }}
+                    {% endif %}
+                    {% if book.price %}
+                    &nbsp;&nbsp;{{ book.price }}$
+                {% endif %}</p>
+              </div>
+
+    </td>
+            {% endfor %}
+        </tr>
+     {% endfor %}
+
+      </tbody>
+</table>
+    <nav aria-label="...">
+                <ul class="pagination" style="margin-top: 0;">
+                    {{ page_html|safe }}
+                </ul>
+            </nav>
+  </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+    <script>
+                $(document).ready(function() {
+
+ {#initloadbooklist();#}
+
+searchinit()
+});
+
+                function searchinit() {
+                    $('#searchbutton').click(
+                        function () {
+
+                             var contet=$('#searchinput')
+                  var url = document.URL;
+                    var queryParams = new URLSearchParams(new URL(url).search);
+                    queryParams.set('search',contet.val());
+                    queryParams.set('page',1);
+                    location.href=location.pathname + '?' + queryParams.toString();
+                    }
+                    )
+
+
+            }
+
+
+
+                function  initloadbooklist() {
+                        $.ajax({
+            url: "{% url 'book:book_list' %}",
+            type: "POST",
+            data: {},
+            dataType: "JSON",
+            success: function(res) {
+                if (res['status']) {
+                    var tobody=$('#book_body');
+                    tobody.empty();
+                    data=res.data;
+
+                    $.each(data,function (key,value) {
+                        var tr=$("<tr>");
+                        tr.append($("<td>").text(value.name));
+                        tr.append($("<td>").text(value.id));
+                        tr.append($("<td>").text(value.phone));
+                        tr.append($("<td>").text(value.classes));
+                        tr.append($("<td>").text(value.emial));
+                        tr.append($("<td>").text(value.create_date));
+                        tobody.append(tr);
+                    })
+
+
+
+                } else {
+                  alert(res.data)
+                }
+            },
+
+        });
+
+                }
+    </script>
+
+
+{% endblock %}

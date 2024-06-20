@@ -1,0 +1,17 @@
+name: ⛔ Documentation
+description: Issues with the Documentation
+labels: docs
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Description of your support question.
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Love bootstrap-table? Please consider supporting our collective:
+        👉  https://opencollective.com/bootstrap-table/donate

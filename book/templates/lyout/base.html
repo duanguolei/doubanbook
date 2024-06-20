@@ -1,0 +1,86 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+      <link rel="stylesheet" href="{% static 'book/plugin/bookstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'book/plugin/font-awesome/css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'book/plugin/bootstrap-table/dist/bootstrap-table.min.css' %}">
+    <link rel="stylesheet" href="{% static 'book/plugin/datetimepicker/jquery.datetimepicker.css' %}">
+
+    {% block css %}
+    {% endblock %}
+<style>
+      .error-msg {
+            color: red;
+            position: absolute;
+            font-size: 13px;
+        }
+
+      a {
+          text-decoration: none;
+      }
+
+      body{
+          {#background-image: url("{% static 'book/image/index.jpg' %}");#}
+          opacity: 1;
+      }
+
+      </style>
+</head>
+<body>
+ <nav class="navbar navbar-default" style="background-color:#545652;margin-top: 0px;width: 100%;border: 0px;opacity: 0.7;color: black;z-index: 10000">
+        <div class="navbar-header">
+            <div class="navbar-brand"  style="text-align: center;color: black;font-size: 30px"><a href="{% url "book:book" %}" style="color: black;text-decoration:none">豆瓣书籍可视化系统</a>
+                </div>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+
+            <ul class="nav navbar-nav navbar-right" style="float: right">
+                 {% if request.manage.user %}
+                    <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">
+                       <img src="{{ MEDIA_URL }}{{ request.manage.user.avator }}" alt="User Avatar" class="avatar" style="width: 25px;height: 25px;border-radius: 50%">
+
+                       <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li  >
+                            <a href="{% url 'book:persion' %}"><i class="fa fa-user" aria-hidden="true"></i>个人中心</a></li>
+                        <li > <a href="{% url 'book:logout' %}"><i class="fa fa-lock" aria-hidden="true"></i>退出</a></li>
+                    </ul>
+                </li>
+
+                {% else %}
+                    <li> <a href='{% url "book:login" %}'>登 录</a></li>
+                    <li> <a href='{% url "book:register" %}'>注 册</a></li>
+                {% endif %}
+            </ul>
+
+    </div>
+</nav>
+
+
+
+
+
+{% block content %}{% endblock %}
+
+<script src="{% static 'book/js/3.7.1-jquery.min.js' %}"></script>
+
+<script src="{% static 'book/plugin/bookstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'book/plugin/bootstrap-table/dist/bootstrap-table.min.js' %}"></script>
+<script src="{% static 'book/plugin/bootstrap-table/dist/locale/bootstrap-table-zh-CN.min.js' %}"></script>
+
+<script src="{% static 'book/plugin/Highcharts-10.0.0/code/highcharts.js'%}"></script>
+<script src="{% static 'book/plugin/Highcharts-10.0.0/code/highcharts.src.js'%}"></script>
+        <script src="https://code.hcharts.cn/plugins/zh_cn.js"></script>
+
+{% block js %}
+{% endblock %}
+</body>
+</html>

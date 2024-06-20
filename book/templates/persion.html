@@ -1,0 +1,173 @@
+{% extends './lyout/base.html' %}
+{% load static %}
+{% block css %}
+     <style>
+        .custom-input-group {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* 添加模糊效果 */
+        }
+           .avatar-image {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+               margin: 20px;
+
+    }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="panel panel-default" style="background-color: #f6f6f1">
+<div class="panel-heading">
+    <div><h5>个人信息</h5></div>
+    <button class="btn btn-default btn-sm" style="margin-right: 10px" data-toggle="modal" data-target="#settingModal">设置</button>
+
+</div>
+  <div class="panel-body">
+    <div class="container " >
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4 text-center">
+
+                <h1>{{ request.manage.user.username }}</h1>
+                <img src="{{ MEDIA_URL }}{{ request.manage.user.avator }}" alt="Avatar" class="img-responsive img-circle avatar-image" >
+                <p>Phone:{{ request.manage.user.mobile_phone }}</p>
+                <p>Email:{{ request.manage.user.email }}</p>
+
+            </div>
+        </div>
+    </div>
+  </div>
+
+</div>
+
+
+    <div class="modal fade" id="settingModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="opacity: 0.9; margin-top: 30px">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">信息更改</h4>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-6 mx-auto">
+                            <form>
+                                <div class="form-group">
+                                    <div class="input-group custom-input-group">
+                                        <span class="input-group-addon" style="border-radius: 10px 0 0 10px;">用户名:</span>
+                                        <input type="text" class="form-control" placeholder="输入你的用户名或昵称" id="usernameint">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group custom-input-group">
+                                        <span class="input-group-addon" style="border-radius: 10px 0 0 10px;">邮箱:</span>
+                                        <input type="email" class="form-control" placeholder="输入你需要更改的邮箱" id="emailint">
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" id="persionbtn"> 提交 </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mx-auto">
+                            <form>
+                                <div class="form-group">
+                                    <div class="input-group custom-input-group">
+                                        <input type="file" class="form-control" placeholder="上传头像" id="uploadimg">
+                                    </div>
+                                </div>
+                                <div class="btn btn-primary" id="imagebtn"> <i class="fa fa-upload" aria-hidden="true"></i>上传头像 </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <div id="error"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block js %}
+    <script>
+$(document).ready(function() {
+    bindClickSubmit();
+    uploadavatar()
+
+});
+
+function bindClickSubmit() {
+    $("#persionbtn").click(function() {
+           var  error=$('#error');
+           error.empty()
+        var data={
+            email:$('#emailint').val(),
+            name:$('#usernameint').val(),
+
+        }
+        $.ajax({
+            url: "{% url 'book:persion' %}",
+            type: "POST",
+            data: data,
+            dataType: "JSON",
+            success: function(res) {
+                console.log(res)
+                if (res['status']) {
+                    location.href ='{% url "book:persion" %}';
+
+                } else {
+                   error.text(res.error)
+                }
+            },
+
+        });
+    });
+
+}
+
+function uploadavatar() {
+    $("#imagebtn").click(function() {
+        var error = $('#error');
+        error.empty();
+
+        var formData = new FormData();
+        var files = $('#uploadimg')[0].files;
+        if (files.length > 0) {
+            formData.append('image', files[0]);
+            formData.append('type', 'useravator');
+
+            $.ajax({
+                url: "{% url 'book:upload' %}",
+                type: "POST",
+                data: formData,
+                dataType: "JSON",
+                processData: false,
+                contentType: false,
+                success: function(res) {
+                    console.log(res);
+                    if (res['status']) {
+                        location.href = '{% url "book:persion" %}';
+                    } else {
+                        error.text('上传错误');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                    error.text('上传错误');
+                }
+            });
+        } else {
+            error.text('请选择要上传的图片');
+        }
+    });
+}
+
+</script>
+{% endblock %}
