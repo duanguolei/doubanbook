@@ -1,4 +1,4 @@
-*.js linguist-language=ｐｙｔｈｏｎ
-*.css linguist-language=ｐｙｔｈｏｎ
-*.html linguist-language=ｐｙｔｈｏｎ
-*.ｐｙ linguist-language=ｐｙｔｈｏｎ
+*.js linguist-language=python
+*.css linguist-language=python
+*.html linguist-language=python
+*.py  linguist-language=python
